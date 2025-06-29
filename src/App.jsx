@@ -9,9 +9,13 @@ import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import About from './pages/About';
+import useAuth from './hooks/useAuth';
 import './App.css';
 
 function App() {
+  // Initialize authentication state
+  useAuth();
+
   return (
     <div className="App">
       <Navbar />

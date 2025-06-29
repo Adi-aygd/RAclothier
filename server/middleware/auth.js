@@ -25,13 +25,18 @@ const verifyJWT = (req, res, next) => {
   }
 };
 
-// Middleware to verify Firebase ID token (for client-side auth)
+// Middleware to verify Firebase ID token
 const verifyFirebaseToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(401).json({
+        type: 'error',
+        status_code: 401,
+        message: 'No token provided',
+        result: null,
+      });
     }
 
     const token = authHeader.split('Bearer ')[1];
@@ -42,7 +47,12 @@ const verifyFirebaseToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Token verification error:', error);
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({
+      type: 'error',
+      status_code: 401,
+      message: 'Invalid or expired token',
+      result: null,
+    });
   }
 };
 
@@ -50,7 +60,12 @@ const verifyFirebaseToken = async (req, res, next) => {
 const requireAdmin = async (req, res, next) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({
+        type: 'error',
+        status_code: 401,
+        message: 'Authentication required',
+        result: null,
+      });
     }
 
     // Check if user has admin role in Firestore
@@ -58,19 +73,34 @@ const requireAdmin = async (req, res, next) => {
     const userDoc = await db.collection('users').doc(req.user.uid).get();
 
     if (!userDoc.exists) {
-      return res.status(403).json({ error: 'User not found' });
+      return res.status(403).json({
+        type: 'error',
+        status_code: 403,
+        message: 'User not found',
+        result: null,
+      });
     }
 
     const userData = userDoc.data();
     if (userData.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
+      return res.status(403).json({
+        type: 'error',
+        status_code: 403,
+        message: 'Admin access required',
+        result: null,
+      });
     }
 
     req.userData = userData;
     next();
   } catch (error) {
     console.error('Admin check error:', error);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({
+      type: 'error',
+      status_code: 500,
+      message: 'Server error',
+      result: null,
+    });
   }
 };
 

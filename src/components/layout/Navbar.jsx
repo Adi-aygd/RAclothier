@@ -16,7 +16,7 @@ const Navbar = () => {
     { name: 'Shop', path: '/shop' },
     { name: 'Shirts', path: '/shop/shirts' },
     { name: 'Blazers', path: '/shop/blazers' },
-    { name: 'About', path: '/about' }
+    { name: 'About', path: '/about' },
   ];
 
   const handleAuthClick = () => {
@@ -80,7 +80,9 @@ const Navbar = () => {
               <User size={20} />
               {isAuthenticated && (
                 <span className="hidden md:block text-sm text-gray-600">
-                  {user?.name || 'Account'}
+                  {user?.displayName ||
+                    `${user?.firstName} ${user?.lastName}` ||
+                    'Account'}
                 </span>
               )}
             </button>
