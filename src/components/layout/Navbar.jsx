@@ -20,10 +20,7 @@ const Navbar = () => {
   ];
 
   const handleAuthClick = () => {
-    if (isAuthenticated) {
-      logout();
-      navigate('/');
-    } else {
+    if (!isAuthenticated) {
       navigate('/login');
     }
   };

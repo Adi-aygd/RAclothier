@@ -15,7 +15,6 @@ const Login = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    secretKey: '',
   });
   const { login, setLoading } = useStore();
   const navigate = useNavigate();
@@ -164,24 +163,6 @@ const Login = () => {
                       onChange={handleInputChange}
                       className="appearance-none relative block w-full px-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-black focus:border-black focus:z-10"
                       placeholder="Last Name"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="secretKey" className="sr-only">
-                    Secret Key (Optional)
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <input
-                      id="secretKey"
-                      name="secretKey"
-                      type="text"
-                      value={formData.secretKey}
-                      onChange={handleInputChange}
-                      className="appearance-none relative block w-full px-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-black focus:border-black focus:z-10"
-                      placeholder="Secret Key (Optional - for admin access)"
                     />
                   </div>
                 </div>
