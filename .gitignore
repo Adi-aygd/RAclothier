@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-./server/serviceAccountKey.json
-./server/.env
+server/serviceAccountKey.json
+server/.env
+server/serviceAccountKey*.json
