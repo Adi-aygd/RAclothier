@@ -72,11 +72,6 @@ const Login = () => {
           lastName: formData.lastName,
         };
 
-        // Add secretKey only if provided
-        if (formData.secretKey.trim()) {
-          registerData.secretKey = formData.secretKey;
-        }
-
         const data = await authAPI.register(registerData);
 
         // Store token in localStorage

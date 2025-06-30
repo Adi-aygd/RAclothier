@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, User, Search, Menu, X, Heart } from 'lucide-react';
+import {
+  ShoppingBag,
+  User,
+  Search,
+  Menu as MenuIcon,
+  X,
+  Heart,
+  LogOut,
+  UserCircle,
+} from 'lucide-react';
+import { Menu, Button, Avatar, Text, Divider } from '@mantine/core';
 import useStore from '../../store/useStore';
 
 const Navbar = () => {
@@ -25,8 +35,26 @@ const Navbar = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const handleProfileClick = () => {
+    // Navigate to profile page (you can create this route later)
+    navigate('/dashboard');
+  };
+
   const isActiveLink = (path) => {
     return location.pathname === path;
+  };
+
+  const getUserDisplayName = () => {
+    if (user?.displayName) return user.displayName;
+    if (user?.firstName && user?.lastName)
+      return `${user.firstName} ${user.lastName}`;
+    if (user?.firstName) return user.firstName;
+    return user?.email?.split('@')[0] || 'User';
   };
 
   return (
@@ -70,19 +98,69 @@ const Navbar = () => {
             </button>
 
             {/* User Account */}
-            <button
-              onClick={handleAuthClick}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center gap-2"
-            >
-              <User size={20} />
-              {isAuthenticated && (
+            {isAuthenticated ? (
+              <Menu shadow="md" width={200} position="bottom-end">
+                <Menu.Target>
+                  <Button
+                    variant="subtle"
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    style={{
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: 'inherit',
+                      padding: '8px',
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Avatar size="sm" radius="xl">
+                        <User size={16} />
+                      </Avatar>
+                      <span className="hidden md:block text-sm text-gray-600">
+                        {getUserDisplayName()}
+                      </span>
+                    </div>
+                  </Button>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                  <Menu.Label>
+                    <Text size="sm" fw={500}>
+                      {getUserDisplayName()}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {user?.email}
+                    </Text>
+                  </Menu.Label>
+
+                  <Divider />
+
+                  <Menu.Item
+                    leftSection={<UserCircle size={16} />}
+                    onClick={handleProfileClick}
+                  >
+                    Profile
+                  </Menu.Item>
+
+                  <Menu.Item
+                    leftSection={<LogOut size={16} />}
+                    onClick={handleLogout}
+                    color="red"
+                  >
+                    Logout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            ) : (
+              <button
+                onClick={handleAuthClick}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center gap-2"
+              >
+                <User size={20} />
                 <span className="hidden md:block text-sm text-gray-600">
-                  {user?.displayName ||
-                    `${user?.firstName} ${user?.lastName}` ||
-                    'Account'}
+                  Login
                 </span>
-              )}
-            </button>
+              </button>
+            )}
 
             {/* Shopping Cart */}
             <button
@@ -102,7 +180,7 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMenuOpen ? <X size={20} /> : <MenuIcon size={20} />}
             </button>
           </div>
         </div>
@@ -125,12 +203,41 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="border-t border-gray-200 mt-4 pt-4 px-4">
-              <button
-                onClick={handleAuthClick}
-                className="w-full text-left py-2 text-gray-700 hover:text-black"
-              >
-                {isAuthenticated ? 'Logout' : 'Login / Sign Up'}
-              </button>
+              {isAuthenticated ? (
+                <>
+                  <div className="py-2 text-sm text-gray-600">
+                    {getUserDisplayName()}
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleProfileClick();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left py-2 text-gray-700 hover:text-black"
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left py-2 text-red-600 hover:text-red-700"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleAuthClick();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full text-left py-2 text-gray-700 hover:text-black"
+                >
+                  Login / Sign Up
+                </button>
+              )}
             </div>
           </div>
         )}

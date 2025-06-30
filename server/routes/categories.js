@@ -50,10 +50,20 @@ router.get('/', async (req, res) => {
       });
     });
 
-    res.json(categories);
+    res.status(200).json({
+      type: 'success',
+      status_code: 200,
+      message: 'Categories fetched successfully',
+      result: categories,
+    });
   } catch (error) {
     console.error('Get categories error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      type: 'error',
+      status_code: 500,
+      message: 'Server error',
+      result: null,
+    });
   }
 });
 

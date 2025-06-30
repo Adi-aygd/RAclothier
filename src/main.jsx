@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { createTheme, MantineProvider } from '@mantine/core';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css'; //if using mantine date picker features
+import 'mantine-react-table/styles.css'; //import MRT styles
+import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
 import './index.css';
-import { createTheme, MantineProvider } from '@mantine/core';
 
 const theme = createTheme({
   fontFamily: 'Inter, sans-serif',
