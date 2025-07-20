@@ -13,28 +13,29 @@ import About from './pages/About';
 import Dashboard from './pages/dashboard/index';
 import useAuth from './hooks/useAuth';
 import './App.css';
-
-const ProtectedRoute = ({
-  children,
-  requireAuth = true,
-  requireAdmin = false,
-}) => {
-  const { user, isAuthenticated } = useAuth();
-
-  if (requireAuth && !isAuthenticated) {
-    return <div>Please log in to access this page.</div>;
-  }
-
-  if (requireAdmin && user?.role !== 'admin') {
-    return <div>Access denied. Admin privileges required.</div>;
-  }
-
-  return children;
-};
+import { Navigate } from 'react-router-dom';
+import useStore from './store/useStore';
 
 function App() {
   // Initialize authentication state
   useAuth();
+
+  const { isAuthenticated, isLoading } = useStore();
+  if (isLoading) {
+    return (
+      <div className="App">
+        <Navbar />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '50vh' 
+        }}>
+          <div>Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
@@ -53,9 +54,7 @@ function App() {
         <Route
           path="/dashboard/*"
           element={
-            <ProtectedRoute requireAuth={true}>
-              <Dashboard />
-            </ProtectedRoute>
+            isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
           }
         />
       </Routes>

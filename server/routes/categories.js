@@ -33,7 +33,6 @@ router.get('/', async (req, res) => {
     const { isActive } = req.query;
 
     let query = db.collection('categories');
-
     if (isActive !== undefined) {
       query = query.where('isActive', '==', isActive === 'true');
     }

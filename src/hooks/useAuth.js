@@ -10,6 +10,7 @@ export const useAuth = () => {
       const token = localStorage.getItem('token');
 
       if (!token) {
+        setLoading(false);
         return;
       }
 
@@ -44,11 +45,9 @@ export const useAuth = () => {
       }
     };
 
-    // Only initialize if not already authenticated
-    if (!isAuthenticated) {
-      initializeAuth();
-    }
-  }, [login, logout, setLoading, isAuthenticated]);
+    // Always initialize auth on mount to check token
+    initializeAuth();
+  }, [login, logout, setLoading]);
 
   return {
     user,

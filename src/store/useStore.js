@@ -13,7 +13,7 @@ const useStore = create(
       cartTotal: 0,
 
       // UI state
-      isLoading: false,
+      isLoading: true, // Start with loading true to check auth on mount
 
       // Actions
       login: (userData) =>

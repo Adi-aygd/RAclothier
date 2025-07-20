@@ -84,8 +84,6 @@ export const products = [
       ],
       inStock: true,
       featured: true,
-      rating: 4.6,
-      reviews: 203
     }
   ];
   

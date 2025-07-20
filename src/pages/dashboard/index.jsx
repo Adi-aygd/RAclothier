@@ -30,8 +30,9 @@ import {
 } from '@mantine/core';
 import useStore from '../../store/useStore';
 import classes from './dashboard.module.css';
-import UserProfile from './components/userProfile/UserProfile';
-import Category from './components/category/category';
+import UserProfile from './features/userProfile/UserProfile';
+import Category from './features/category/category';
+import Products from './features/products';
 const tabs = {
   user: [
     {
@@ -368,19 +369,7 @@ export default function Dashboard() {
             element={
               <DashboardProtectedRoute requireAdmin={true}>
                 <div className={classes.content}>
-                  <Group justify="space-between" mb="md">
-                    <Text size="xl" fw={700}>
-                      Product Management
-                    </Text>
-                    <Button leftSection={<IconPlus size={16} />}>
-                      Add Product
-                    </Button>
-                  </Group>
-                  <Card withBorder padding="lg">
-                    <Text c="dimmed" ta="center" py="xl">
-                      Product management interface will be implemented here.
-                    </Text>
-                  </Card>
+                  <Products />
                 </div>
               </DashboardProtectedRoute>
             }

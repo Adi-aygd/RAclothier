@@ -1,6 +1,6 @@
 const express = require('express');
 const { db, bucket } = require('../config/firebase');
-const { verifyJWT, requireAdmin } = require('../middleware/auth');
+const { verifyFirebaseToken, requireAdmin } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 
@@ -31,25 +31,22 @@ const upload = multer({
 router.get('/', async (req, res) => {
   try {
     const {
-      categoryId,
       search,
       sort = 'name',
       order = 'asc',
       limit = 20,
       page = 1,
       featured,
-      isActive = true,
+      isActive,
     } = req.query;
 
-    let query = db
-      .collection('products')
-      .where('isActive', '==', isActive === 'true');
+    let query = db.collection('products');
 
-    // Apply category filter
-    if (categoryId) {
-      query = query.where('categoryId', '==', categoryId);
+    // Filter by isActive
+    if (isActive !== undefined) {
+      query = query.where('isActive', '==', isActive === 'true');
     }
-
+    
     // Apply featured filter
     if (featured !== undefined) {
       query = query.where('featured', '==', featured === 'true');
@@ -64,15 +61,18 @@ router.get('/', async (req, res) => {
       );
     }
 
-    // Apply sorting
     query = query.orderBy(sort, order);
 
     // Apply pagination
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    query = query.limit(parseInt(limit)).offset(offset);
+    if (page && limit) {
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      query = query.limit(parseInt(limit)).offset(offset);
+    } else {
+      query = query.limit(20);
+    }
 
     const snapshot = await query.get();
-    const products = [];
+    let products = [];
 
     snapshot.forEach((doc) => {
       products.push({
@@ -81,12 +81,17 @@ router.get('/', async (req, res) => {
       });
     });
 
-    res.json({
-      products,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: products.length,
+    res.status(200).json({
+      type: 'success',
+      status_code: 200,
+      message: 'Products fetched successfully',
+      result: {
+        products,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: products.length,
+        },
       },
     });
   } catch (error) {
@@ -120,7 +125,7 @@ router.get('/:id', async (req, res) => {
 // Create product (admin only)
 router.post(
   '/',
-  verifyJWT,
+  verifyFirebaseToken,
   requireAdmin,
   upload.array('images', 5),
   async (req, res) => {
@@ -129,41 +134,39 @@ router.post(
         name,
         description,
         price,
+        originalPrice,
         categoryId,
         stock = 0,
         isActive = true,
         featured = false,
         sizes,
         colors,
-        originalPrice,
-        rating = 0,
-        reviews = 0,
       } = req.body;
 
       // Validate required fields
-      if (!name || !description || !price || !categoryId) {
+      if (!name || !description || !price) {
         return res.status(400).json({
-          error: 'Name, description, price, and categoryId are required',
+          error: 'Name, description, and price are required',
         });
       }
 
-      // Validate category exists
-      const categoryDoc = await db
-        .collection('categories')
-        .doc(categoryId)
-        .get();
-      if (!categoryDoc.exists) {
-        return res.status(400).json({ error: 'Category not found' });
+      // Validate category exists (if categoryId is provided)
+      let categoryData = null;
+      if (categoryId) {
+        const categoryDoc = await db
+          .collection('categories')
+          .doc(categoryId)
+          .get();
+        if (!categoryDoc.exists) {
+          return res.status(400).json({ error: 'Category not found' });
+        }
+        categoryData = categoryDoc.data();
       }
-
-      const categoryData = categoryDoc.data();
 
       const productData = {
         name,
         description,
         price: parseFloat(price),
-        categoryId,
-        categoryName: categoryData.name, // Store category name for easy access
         stock: parseInt(stock) || 0,
         isActive: isActive === 'true',
         featured: featured === 'true',
@@ -173,12 +176,16 @@ router.post(
         createdBy: req.user.uid,
       };
 
+      // Add category info if provided
+      if (categoryId && categoryData) {
+        productData.categoryId = categoryId;
+        productData.categoryName = categoryData.name;
+      }
+
       // Optional fields
       if (originalPrice) productData.originalPrice = parseFloat(originalPrice);
       if (sizes) productData.sizes = JSON.parse(sizes);
       if (colors) productData.colors = JSON.parse(colors);
-      if (rating) productData.rating = parseFloat(rating);
-      if (reviews) productData.reviews = parseInt(reviews);
 
       // Handle image uploads
       if (req.files && req.files.length > 0) {
@@ -220,10 +227,16 @@ router.post(
       }
 
       const docRef = await db.collection('products').add(productData);
+      const product = await docRef.get();
 
       res.status(201).json({
+        type: 'success',
+        status_code: 201,
         message: 'Product created successfully',
-        productId: docRef.id,
+        result: {
+          id: product.id,
+          ...product.data(),
+        },
       });
     } catch (error) {
       console.error('Create product error:', error);
@@ -235,7 +248,7 @@ router.post(
 // Update product (admin only)
 router.put(
   '/:id',
-  verifyJWT,
+  verifyFirebaseToken,
   requireAdmin,
   upload.array('images', 5),
   async (req, res) => {
@@ -354,7 +367,7 @@ router.put(
 );
 
 // Delete product (admin only)
-router.delete('/:id', verifyJWT, requireAdmin, async (req, res) => {
+router.delete('/:id', verifyFirebaseToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

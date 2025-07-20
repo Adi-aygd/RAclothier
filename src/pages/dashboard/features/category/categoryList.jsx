@@ -13,7 +13,6 @@ import {
 import { IconEye, IconEdit, IconTrash } from '@tabler/icons-react';
 import { formatRelativeTime } from '../../../../utils/formatDate';
 import { categoriesAPI } from '../../../../utils/api';
-import AdvancedDataTable from '../../../../components/table/AdvancedDataTable';
 import { useMantineReactTable, MantineReactTable } from 'mantine-react-table';
 
 const CategoryList = () => {
