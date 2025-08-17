@@ -4,6 +4,7 @@ import { Container, Paper, Title, Text, Button, Group, Stack, Alert, Box, Grid }
 import { IconCheck, IconTruckDelivery, IconMail, IconAlertCircle, IconX, IconShield } from '@tabler/icons-react';
 import CryptoJS from 'crypto-js';
 import useStore from '../../store/useStore';
+import orderService from '../../services/orderService';
 
 const EsewaPaymentConfirmation = () => {
   const navigate = useNavigate();
@@ -81,31 +82,35 @@ const EsewaPaymentConfirmation = () => {
           
           // Check payment status from eSewa response
           if (decodedData.status === 'COMPLETE') {
-            // Since signature is verified and eSewa response shows COMPLETE,
-            // we can trust this result even if API verification fails due to CORS
-            setPaymentStatus('success');
-            clearCart();
-            
-            // Try API verification but don't depend on it due to CORS restrictions
-            try {
-              const apiVerification = await verifyEsewaPayment(
-                decodedData.transaction_uuid,
-                decodedData.total_amount,
-                decodedData.product_code
-              );
-              
-              console.log('API Verification Result:', apiVerification);
-              setVerificationResult(apiVerification);
-            } catch (error) {
-              console.warn('API verification skipped due to CORS restrictions:', error);
-              // Create a mock verification result for display purposes
-              setVerificationResult({
-                product_code: decodedData.product_code,
-                transaction_uuid: decodedData.transaction_uuid,
-                total_amount: parseFloat(decodedData.total_amount),
-                status: decodedData.status,
-                ref_id: decodedData.transaction_code // Use transaction_code as ref_id
-              });
+            // Create order in backend after successful payment
+            const pendingOrderData = sessionStorage.getItem('pendingOrder');
+            if (pendingOrderData) {
+              try {
+                const orderToCreate = JSON.parse(pendingOrderData);
+                // Add payment details to order
+                orderToCreate.transaction_uuid = decodedData.transaction_uuid;
+                orderToCreate.transaction_code = decodedData.transaction_code;
+                orderToCreate.ref_id = decodedData.transaction_code; // Use transaction_code as ref_id
+
+                const response = await orderService.createOrder(orderToCreate);
+                
+                if (response.success) {
+                  setPaymentStatus('success');
+                  clearCart();
+                  sessionStorage.removeItem('pendingOrder');
+                  console.log('✅ Order created successfully after eSewa payment');
+                } else {
+                  console.error('Failed to create order:', response.message);
+                  setPaymentStatus('error');
+                }
+              } catch (orderError) {
+                console.error('Order creation error:', orderError);
+                setPaymentStatus('error');
+              }
+            } else {
+              // No pending order data, but payment successful
+              setPaymentStatus('success');
+              clearCart();
             }
           } else {
             setPaymentStatus('failed');

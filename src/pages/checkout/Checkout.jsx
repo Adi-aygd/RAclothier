@@ -21,6 +21,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import useStore from '../../store/useStore';
 import toast from 'react-hot-toast';
+import orderService from '../../services/orderService';
 import ShippingInfo from './components/ShippingInfo';
 import PaymentInfo from './components/PaymentInfo';
 import OrderReview from './components/OrderReview';
@@ -58,6 +59,7 @@ const Checkout = () => {
     resolver: yupResolver(shippingSchema),
     mode: 'onChange',
     defaultValues: {
+    userId: user?.uid || '',
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     email: user?.email || '',
@@ -90,7 +92,6 @@ const Checkout = () => {
 
   const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
 
-
   const handlePlaceOrder = async (data) => {
     try {
       if (!paymentMethod) {
@@ -98,26 +99,40 @@ const Checkout = () => {
         return;
       }
 
+      // Prepare order data for backend
+      const orderData = {
+        ...data,
+        cart: cart,
+        paymentMethod: paymentMethod,
+        total_amount: total_amount
+      };
+
       if (paymentMethod === 'esewa') {
-        handleEsewaPayment(total_amount);
+        // For eSewa, we'll create the order after payment confirmation
+        // Store order data in sessionStorage for later use
+        sessionStorage.setItem('pendingOrder', JSON.stringify(orderData));
+        handleEsewaPayment(cartTotal, tax_amount, shipping_amount);
       } else if (paymentMethod === 'cod') {
-        // Handle cash on delivery
-        const orderData = {
-          ...data,
-          paymentMethod: 'cod',
-          cart: cart,
-          total: total_amount,
-          orderDate: new Date().toISOString(),
-          status: 'pending'
-        };
-        
-        // Here you would typically send this to your backend
-        console.log('Order placed:', orderData);
-        
-        // Clear cart and redirect
-        clearCart();
-        toast.success('Order placed successfully! You will pay on delivery.');
-        navigate('/order-confirmation', { state: { orderData } });
+        // For COD, create order immediately
+        try {
+          const response = await orderService.createOrder(orderData);
+          
+          if (response.success) {
+            clearCart();
+            toast.success('Order placed successfully! You will pay on delivery.');
+            navigate('/order-confirmation', { 
+              state: { 
+                orderData: response.order,
+                paymentMethod: 'cod'
+              } 
+            });
+          } else {
+            throw new Error(response.message || 'Failed to create order');
+          }
+        } catch (apiError) {
+          console.error('Order creation error:', apiError);
+          toast.error(apiError.message || 'Failed to place order. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Order placement error:', error);

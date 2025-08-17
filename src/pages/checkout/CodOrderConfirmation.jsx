@@ -6,8 +6,6 @@ import useStore from '../../store/useStore';
 
 const CodOrderConfirmation = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { clearCart } = useStore();
 
   const statusInfo = {
     title: 'Order Confirmed',
