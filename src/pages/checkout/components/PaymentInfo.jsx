@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Title, Group, Paper, Text, Radio, Stack, Alert } from '@mantine/core';
-import { Shield, CreditCard } from 'lucide-react';
+import { IconShield, IconCreditCard } from '@tabler/icons-react';
 
 const PaymentInfo = ({ onPaymentMethodChange, selectedPaymentMethod }) => {
 
@@ -62,7 +62,7 @@ const PaymentInfo = ({ onPaymentMethodChange, selectedPaymentMethod }) => {
                     </Text>
                   </Box>
                 </Group>
-                <CreditCard size={24} color="#ccc" />
+                <IconCreditCard size={24} color="#ccc" />
               </Group>
             </Paper>
 
@@ -92,15 +92,18 @@ const PaymentInfo = ({ onPaymentMethodChange, selectedPaymentMethod }) => {
         </Radio.Group>
 
         {selectedPaymentMethod === 'esewa' && (
-          <Alert icon={<Shield size={16} />} title="Secure Payment" color="green">
+          <Alert icon={<IconShield size={16} />} title="Secure Payment" color="green">
             <Text size="sm">
-              You will be redirected to eSewa's secure payment gateway after reviewing your order. This is a test environment for development purposes.
+              You will be redirected to eSewa's secure payment gateway after reviewing your order. 
+            </Text>
+            <Text size="xs" c="dimmed" mt="xs">
+              Test credentials: ID: 9806800001, Password: Nepal@123, MPIN: 1122
             </Text>
           </Alert>
         )}
 
         {selectedPaymentMethod === 'cod' && (
-          <Alert icon={<Shield size={16} />} title="Cash on Delivery" color="blue">
+          <Alert icon={<IconShield size={16} />} title="Cash on Delivery" color="blue">
             <Text size="sm">
               You can pay in cash when your order is delivered to your address. Please ensure you have the exact amount ready.
             </Text>
@@ -108,7 +111,7 @@ const PaymentInfo = ({ onPaymentMethodChange, selectedPaymentMethod }) => {
         )}
 
         {selectedPaymentMethod === 'card' && (
-          <Alert icon={<Shield size={16} />} title="Coming Soon" color="gray">
+          <Alert icon={<IconShield size={16} />} title="Coming Soon" color="gray">
             <Text size="sm">
               Credit/Debit card payments will be available soon. Please use eSewa or Cash on Delivery for now.
             </Text>
@@ -118,7 +121,7 @@ const PaymentInfo = ({ onPaymentMethodChange, selectedPaymentMethod }) => {
         {/* Security Features */}
         <Paper p="md" bg="gray.0">
           <Group>
-            <Shield color="#22c55e" size={24} />
+            <IconShield color="#22c55e" size={24} />
             <Box>
               <Text fw={600}>Secure Payment</Text>
               <Text size="sm" c="dimmed">

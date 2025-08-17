@@ -109,7 +109,9 @@ const useStore = create(
         );
         get().updateCartTotal();
       },
-
+      clearCart: () => {
+        set({ cart: [], cartTotal: 0 }, false, 'clearCart');
+      },
       updateCartTotal: () => {
         const { cart } = get();
         const total = cart.reduce(

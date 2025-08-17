@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import CryptoJS from 'crypto-js';
 import { 
   Container, 
   Stepper, 
@@ -43,6 +44,10 @@ const Checkout = () => {
   const { cart, cartTotal, isAuthenticated, user, clearCart } = useStore();
   const [active, setActive] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('esewa');
+
+   const tax_amount = Math.round(cartTotal * 0.1); // 10% tax rounded
+   const shipping_amount = cartTotal > 500 ? 0 : 100; // Shipping cost
+   const total_amount = Math.round(cartTotal + tax_amount + shipping_amount);
 
   const {
     control,
@@ -87,62 +92,53 @@ const Checkout = () => {
 
   const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
 
-  const handlePlaceOrder = async (data) => {
-    try {
-      if (!paymentMethod) {
-        toast.error('Please select a payment method');
-        return;
-      }
-
-      // Handle different payment methods
-      if (paymentMethod === 'esewa') {
-        // eSewa payment will be handled in PaymentInfo component
-        // const total = calculateTotal();
-        const total =5; // TODO; remove this. testing for now.
-        handleEsewaPayment(total);
-      } else if (paymentMethod === 'cod') {
-        // Handle cash on delivery
-        const orderData = {
-          ...data,
-          paymentMethod: 'cod',
-          cart: cart,
-          total: calculateTotal(),
-          orderDate: new Date().toISOString(),
-          status: 'pending'
-        };
-        
-        // Here you would typically send this to your backend
-        console.log('Order placed:', orderData);
-        
-        // Clear cart and redirect
-        // clearCart();
-        toast.success('Order placed successfully! You will pay on delivery.');
-        navigate('/order-confirmation', { state: { orderData } });
-      }
-    } catch (error) {
-      console.error('Order placement error:', error);
-      toast.error('Failed to place order. Please try again.');
-    }
-  };
-
-  const handleEsewaPayment = (total) => {
-    // eSewa test configuration
-    const esewaConfig = {
-      amt: total,
-      pdc: 0,
-      psc: 0,
-      txAmt: 0,
-      tAmt: total,
-      pid: `RACLOTHIER-${Date.now()}`, // Unique product ID
-      scd: 'EPAYTEST', // eSewa test merchant code
-      su: `${window.location.origin}/order-confirmation`, // Success URL
-      fu: `${window.location.origin}/checkout`, // Failure URL
+  const handleEsewaPayment = (total_amount) => {
+    console.log('total_amount', total_amount);
+    // Generate signature using HMAC SHA256 as per eSewa documentation
+    const generateSignature = (total_amount, transaction_uuid, product_code) => {
+      const secret_key = '8gBm/:&EnhH.1/q';
+      const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
+      
+      // Generate HMAC SHA256 signature as per eSewa documentation
+      const hash = CryptoJS.HmacSHA256(message, secret_key);
+      const signature = CryptoJS.enc.Base64.stringify(hash);
+      
+      return signature;
     };
+
+    // Use actual cart values for payment
+    const transaction_uuid = `${Date.now()}`;
+    const product_code = 'EPAYTEST';
+    // total amount with tax and shipping is total_amount
+    // const tax_amount = 
+    
+    const esewaConfig = {
+      amount: total_amount,
+      transaction_uuid: transaction_uuid,
+      product_code: product_code,
+      product_service_charge: 0,
+      product_delivery_charge: 0,
+      success_url: `${window.location.origin}/order-confirmation`,
+      failure_url: `${window.location.origin}/checkout`,
+      signed_field_names: 'total_amount,transaction_uuid,product_code',
+      signature: generateSignature(total_amount, transaction_uuid, product_code)
+    };
+
+    // Debug log for testing
+    console.log('eSewa Payment Config:', esewaConfig);
+    console.log('Signature message:', `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`);
+    console.log('Generated signature:', esewaConfig.signature);
+    
+    // Additional debugging - show the exact form data being sent
+    console.log('Form data being sent to eSewa:');
+    Object.keys(esewaConfig).forEach(key => {
+      console.log(`${key}: ${esewaConfig[key]}`);
+    });
 
     // Create form for eSewa payment
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'https://uat.esewa.com.np/epay/main'; // Test URL
+    form.action = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
     
     Object.keys(esewaConfig).forEach(key => {
       const input = document.createElement('input');
@@ -157,10 +153,38 @@ const Checkout = () => {
     document.body.removeChild(form);
   };
 
-  const calculateTotal = () => {
-    const tax = cartTotal * 0.1;
-    const shipping = cartTotal > 200 ? 0 : 25;
-    return cartTotal + tax + shipping;
+  const handlePlaceOrder = async (data) => {
+    try {
+      if (!paymentMethod) {
+        toast.error('Please select a payment method');
+        return;
+      }
+
+      if (paymentMethod === 'esewa') {
+        handleEsewaPayment(total_amount);
+      } else if (paymentMethod === 'cod') {
+        // Handle cash on delivery
+        const orderData = {
+          ...data,
+          paymentMethod: 'cod',
+          cart: cart,
+          total: total,
+          orderDate: new Date().toISOString(),
+          status: 'pending'
+        };
+        
+        // Here you would typically send this to your backend
+        console.log('Order placed:', orderData);
+        
+        // Clear cart and redirect
+        clearCart();
+        toast.success('Order placed successfully! You will pay on delivery.');
+        navigate('/order-confirmation', { state: { orderData } });
+      }
+    } catch (error) {
+      console.error('Order placement error:', error);
+      toast.error('Failed to place order. Please try again.');
+    }
   };
 
   // Auth and cart checks
@@ -193,10 +217,6 @@ const Checkout = () => {
       </Container>
     );
   }
-
-  const tax = cartTotal * 0.1;
-  const shipping = cartTotal > 200 ? 0 : 25;
-  const total = cartTotal + tax + shipping;
 
   return (
     <Box bg="gray.0" mih="100vh" py="xl">
@@ -258,9 +278,9 @@ const Checkout = () => {
                     cart={cart}
                     formData={getValues()}
                     cartTotal={cartTotal}
-                    tax={tax}
-                    shipping={shipping}
-                    total={total}
+                    tax={tax_amount}
+                    shipping={shipping_amount}
+                    total={total_amount}
                     paymentMethod={paymentMethod}
                   />
                 </Stepper.Step>
@@ -311,16 +331,16 @@ const Checkout = () => {
                 </Group>
                 <Group justify="space-between">
                   <Text>Shipping</Text>
-                  <Text fw={600}>{shipping === 0 ? 'Free' : `${shipping.toFixed(2)}`}</Text>
+                  <Text fw={600}>{shipping_amount === 0 ? 'Free' : `${shipping_amount.toFixed(2)}`}</Text>
                 </Group>
                 <Group justify="space-between">
                   <Text>Tax</Text>
-                  <Text fw={600}>रु {tax.toFixed(2)}</Text>
+                  <Text fw={600}>रु {tax_amount.toFixed(2)}</Text>
                 </Group>
                 <Divider />
-                <Group justify="space-between">x
+                <Group justify="space-between">
                   <Text size="lg" fw={700}>Total</Text>
-                  <Text size="lg" fw={700}>रु {total.toFixed(2)}</Text>
+                  <Text size="lg" fw={700}>रु {total_amount.toFixed(2)}</Text>
                 </Group>
               </Stack>
 
