@@ -280,7 +280,7 @@ export default function Dashboard() {
                   <Text c="dimmed" ta="center" py="xl">
                     No orders found. Start shopping to see your order history.
                   </Text>
-                  <Button onClick={() => navigate('/shop')}>
+                  <Button onClick={() => navigate('/products')}>
                     Browse Products
                   </Button>
                 </Card>

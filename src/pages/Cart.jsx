@@ -25,7 +25,7 @@ const Cart = () => {
           <ShoppingBag size={64} className="mx-auto text-gray-400 mb-4" />
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
           <p className="text-gray-600 mb-8">Discover our premium collection and find your perfect style.</p>
-          <Link to="/shop" className="btn-primary">
+          <Link to="/products" className="btn-primary">
             Explore Collection
           </Link>
         </div>

@@ -45,7 +45,7 @@ const OrderConfirmation = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={() => navigate('/shop')}
+              onClick={() => navigate('/products')}
               className="btn-primary"
             >
               Continue Shopping

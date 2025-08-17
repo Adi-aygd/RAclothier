@@ -107,7 +107,12 @@ router.get('/:id', async (req, res) => {
     const doc = await db.collection('products').doc(id).get();
 
     if (!doc.exists) {
-      return res.status(404).json({ error: 'Product not found' });
+      return res.status(404).json({
+        type: 'error',
+        status_code: 404,
+        message: 'Product not found',
+        result: null,
+      });
     }
 
     const product = {
@@ -115,10 +120,20 @@ router.get('/:id', async (req, res) => {
       ...doc.data(),
     };
 
-    res.json(product);
+    res.status(200).json({
+      type: 'success',
+      status_code: 200,
+      message: 'Product fetched successfully',
+      result: product,
+    });
   } catch (error) {
     console.error('Get product error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      type: 'error',
+      status_code: 500,
+      message: 'Server error',
+      result: null,
+    });
   }
 });
 

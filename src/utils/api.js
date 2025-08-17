@@ -101,9 +101,14 @@ export const categoriesAPI = {
 // Products API functions
 export const productsAPI = {
   getAll: (params = {}) => {
-    return apiRequest(`/products`, { params });
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/products?${queryString}` : '/products';
+    return apiRequest(endpoint);
   },
-  getById: (id) => apiRequest(`/products/${id}`),
+  getById: (id) =>
+    apiRequest(`/products/${id}`, {
+      method: 'GET',
+    }),
   create: (formData) =>
     apiRequest('/products', {
       method: 'POST',
