@@ -8,10 +8,11 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/checkout/Checkout';
-import EsewaPaymentConfirmation from './pages/checkout/EsewaPaymentConfirmation';
-import CodOrderConfirmation from './pages/checkout/CodOrderConfirmation';
+// import EsewaPaymentConfirmation from './pages/checkout/EsewaPaymentConfirmation';
+// import CodOrderConfirmation from './pages/checkout/CodOrderConfirmation';
+import OrderConfirmation from './pages/OrderConfirmation';
 import About from './pages/About';
-import Dashboard from './pages/dashboard/index';
+import Dashboard from './pages/dashboard/index';  
 import useAuth from './hooks/useAuth';
 import './App.css';
 import { Navigate } from 'react-router-dom';
@@ -54,9 +55,9 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/payment-confirmation" element={<EsewaPaymentConfirmation />} />
-        <Route path="/order-confirmation" element={<CodOrderConfirmation />} />
-
+        <Route path="/order-confirmation" element={<OrderConfirmation />} />
+        {/* <Route path="/order-confirmation" element={<CodOrderConfirmation />} />
+        <Route path="/payment-confirmation" element={<EsewaPaymentConfirmation />} /> */}
         <Route path="/about" element={<About />} />
 
         <Route

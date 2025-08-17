@@ -212,6 +212,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Size Selection */}
+            {product?.sizes && product?.sizes.length > 0 && (
             <div>
               <h3 className="font-semibold mb-3 text-lg">
                 Size: {selectedSize}
@@ -232,6 +233,7 @@ const ProductDetail = () => {
                 ))}
               </div>
             </div>
+            )}
 
             {/* Color Selection */}
             {product?.colors && product.colors.length > 0 && (
