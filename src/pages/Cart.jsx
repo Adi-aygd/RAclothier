@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import useStore from '../store/useStore';
 import toast from 'react-hot-toast';
-
+import placeholder from '../assets/product_placeholder.jpg';
 const Cart = () => {
   const { cart, cartTotal, updateQuantity, removeFromCart } = useStore();
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const Cart = () => {
                 {cart.map((item, index) => (
                   <div key={`${item.id}-${item.size || 'no-size'}-${item.color || 'no-color'}-${index}`} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
                     <img 
-                      src={item.images?.[0] || '/src/assets/product_placeholder.jpg'} 
+                      src={item.images?.[0] || placeholder} 
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded-lg"
                     />

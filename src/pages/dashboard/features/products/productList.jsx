@@ -16,6 +16,7 @@ import { IconEye, IconEdit, IconTrash } from '@tabler/icons-react';
 import { formatRelativeTime } from '../../../../utils/formatDate';
 import { productsAPI } from '../../../../utils/api';
 import { useMantineReactTable, MantineReactTable } from 'mantine-react-table';
+import { convertTextToHtmlBr } from '../../../../utils/formatString';
 
 const ProductList = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -94,7 +95,7 @@ const ProductList = () => {
         Cell: ({ cell }) => (
           <NumberFormatter
             value={cell.getValue()}
-            prefix="$"
+            prefix="रू "
             thousandSeparator
             decimalScale={2}
           />
@@ -109,7 +110,7 @@ const ProductList = () => {
           return originalPrice ? (
             <NumberFormatter
               value={originalPrice}
-              prefix="$"
+              prefix="रू "
               thousandSeparator
               decimalScale={2}
             />
@@ -254,7 +255,7 @@ const ProductList = () => {
                 </Table.Tr>
                 <Table.Tr>
                   <Table.Td style={{ fontWeight: 600 }}>Description:</Table.Td>
-                  <Table.Td>{selectedProduct.description}</Table.Td>
+                  <Table.Td><Text dangerouslySetInnerHTML={{ __html: convertTextToHtmlBr(selectedProduct.description) }} /></Table.Td>
                 </Table.Tr>
                 <Table.Tr>
                   <Table.Td style={{ fontWeight: 600 }}>Category:</Table.Td>
@@ -273,7 +274,7 @@ const ProductList = () => {
                   <Table.Td>
                     <NumberFormatter
                       value={selectedProduct.price}
-                      prefix="$"
+                      prefix="रू "
                       thousandSeparator
                       decimalScale={2}
                     />
@@ -285,7 +286,7 @@ const ProductList = () => {
                     <Table.Td>
                       <NumberFormatter
                         value={selectedProduct.originalPrice}
-                        prefix="$"
+                        prefix="रू "
                         thousandSeparator
                         decimalScale={2}
                       />
@@ -325,7 +326,7 @@ const ProductList = () => {
                     </Badge>
                   </Table.Td>
                 </Table.Tr>
-                {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
+                {selectedProduct?.sizes && selectedProduct.sizes.length > 0 && (
                   <Table.Tr>
                     <Table.Td style={{ fontWeight: 600 }}>Sizes:</Table.Td>
                     <Table.Td>
@@ -339,7 +340,7 @@ const ProductList = () => {
                     </Table.Td>
                   </Table.Tr>
                 )}
-                {selectedProduct.colors && selectedProduct.colors.length > 0 && (
+                {selectedProduct?.colors && selectedProduct.colors.length > 0 && (
                   <Table.Tr>
                     <Table.Td style={{ fontWeight: 600 }}>Colors:</Table.Td>
                     <Table.Td>

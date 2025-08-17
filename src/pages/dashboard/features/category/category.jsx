@@ -1,10 +1,10 @@
-import { Group, Text, Button, Card } from '@mantine/core';
+import { Group, Text, Button, Card, Box } from '@mantine/core';
 import CategoryList from './categoryList';
 import CategoryAdd from './categoryAdd';
 
 const Category = () => {
   return (
-    <div>
+    <Box p="md">
       <Group justify="space-between" mb="md">
         <Text size="xl" fw={700}>
           Category Management
@@ -12,7 +12,7 @@ const Category = () => {
         <CategoryAdd />
       </Group>
       <CategoryList />
-    </div>
+    </Box>
   );
 };
 
