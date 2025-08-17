@@ -11,6 +11,33 @@ import './index.css';
 
 const theme = createTheme({
   fontFamily: 'Inter, sans-serif',
+  primaryColor: 'dark',
+  colors: {
+    dark: [
+      '#d5d7e0',
+      '#acaebf',
+      '#8c8fa3',
+      '#666980',
+      '#4d4f66',
+      '#34354a',
+      '#2b2c3d',
+      '#1d1e30',
+      '#0c0d21',
+      '#000000',
+    ],
+  },
+  components: {
+    Button: {
+      defaultProps: {
+        color: 'dark',
+      },
+    },
+    Stepper: {
+      defaultProps: {
+        color: 'dark',
+      },
+    },
+  },
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(

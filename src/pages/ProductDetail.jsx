@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Text } from '@mantine/core';
 import { Star, Heart, ShoppingBag, Minus, Plus, ArrowLeft } from 'lucide-react';
 import { productsAPI } from '../utils/api';
 import useStore from '../store/useStore';
 import toast from 'react-hot-toast';
 import ProductCard from '../components/ProductCard';
 import placeholder from '../assets/product_placeholder.jpg';
+import { convertTextToHtmlBr } from '../utils/formatString';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -318,11 +320,10 @@ const ProductDetail = () => {
               <h3 className="font-semibold mb-4 text-lg">
                 Product Description
               </h3>
-              <ul className="space-y-2 text-gray-600">
-                <li className="flex items-center gap-2">
-                  {product?.description}
-                </li>
-              </ul>
+              <Text 
+                className="space-y-2 text-gray-600"
+                dangerouslySetInnerHTML={{ __html: convertTextToHtmlBr(product?.description) }}
+              />
             </div>
           </div>
         </div>
