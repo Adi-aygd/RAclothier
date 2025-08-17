@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Star,
@@ -27,11 +27,15 @@ const ProductDetail = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [relatedProducts, setRelatedProducts] = useState([]);
-
+  const isInitialLoad = useRef(true);
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
+        if (isInitialLoad.current) {
+          isInitialLoad.current = false;
+          return;
+        }
         const response = await productsAPI.getById(id);
         const productData = response.result;
 
@@ -56,7 +60,7 @@ const ProductDetail = () => {
     if (id) {
       fetchProduct();
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
