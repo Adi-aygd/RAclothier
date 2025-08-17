@@ -19,7 +19,12 @@ import {
 import { IconPlus, IconUpload, IconX } from '@tabler/icons-react';
 import { categoriesAPI } from '../../../../utils/api';
 import { productsAPI } from '../../../../utils/api';
-const ProductAdd = () => {
+const ProductAdd = ({ 
+  editMode = false, 
+  productData = null, 
+  onProductUpdated = null, 
+  onCancel = null 
+}) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -56,6 +61,34 @@ const ProductAdd = () => {
     fetchCategories();
   }, []);
 
+  // Populate form data when in edit mode
+  useEffect(() => {
+    if (editMode && productData) {
+      setFormData({
+        name: productData.name || '',
+        description: productData.description || '',
+        price: productData.price?.toString() || '',
+        originalPrice: productData.originalPrice?.toString() || '',
+        categoryId: productData.categoryId || '',
+        stock: productData.stock || 0,
+        isActive: productData.isActive !== undefined ? productData.isActive : true,
+        featured: productData.featured !== undefined ? productData.featured : false,
+        sizes: productData.sizes || [],
+        colors: productData.colors || [],
+      });
+
+      // Handle existing images for edit mode
+      if (productData.images && productData.images.length > 0) {
+        const existingPreviews = productData.images.map((url, index) => ({
+          url,
+          name: `existing-image-${index}`,
+          existing: true
+        }));
+        setImagePreviews(existingPreviews);
+      }
+    }
+  }, [editMode, productData]);
+
   // Removed predefined size options - now using TagsInput for custom sizes
 
   const handleImagesChange = (files) => {
@@ -79,7 +112,11 @@ const ProductAdd = () => {
   };
 
   const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    const preview = imagePreviews[index];
+    if (!preview.existing) {
+      // Only remove from images array if it's a new image
+      setImages(prev => prev.filter((_, i) => i !== index));
+    }
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -113,59 +150,83 @@ const ProductAdd = () => {
         formDataToSend.append('colors', JSON.stringify(formData.colors));
       }
 
-      // Append images
+      // Append new images only
       images.forEach((image) => {
         formDataToSend.append('images', image);
       });
 
-      console.log('Creating product with data:', {
-        name: formData.name,
-        description: formData.description,
-        price: formData.price,
-        originalPrice: formData.originalPrice,
-        categoryId: formData.categoryId,
-        stock: formData.stock,
-        isActive: formData.isActive,
-        featured: formData.featured,
-        sizes: formData.sizes,
-        colors: formData.colors,
-        images: images.map(img => img.name),
-      });
+      let result;
+      if (editMode && productData?.id) {
+        console.log('Updating product with data:', {
+          id: productData.id,
+          name: formData.name,
+          description: formData.description,
+          price: formData.price,
+          originalPrice: formData.originalPrice,
+          categoryId: formData.categoryId,
+          stock: formData.stock,
+          isActive: formData.isActive,
+          featured: formData.featured,
+          sizes: formData.sizes,
+          colors: formData.colors,
+          newImages: images.map(img => img.name),
+        });
 
-      const result = await productsAPI.create(formDataToSend);
+        result = await productsAPI.update(productData.id, formDataToSend);
+        console.log('Product updated successfully:', result);
+        
+        if (onProductUpdated) {
+          onProductUpdated();
+        }
+      } else {
+        console.log('Creating product with data:', {
+          name: formData.name,
+          description: formData.description,
+          price: formData.price,
+          originalPrice: formData.originalPrice,
+          categoryId: formData.categoryId,
+          stock: formData.stock,
+          isActive: formData.isActive,
+          featured: formData.featured,
+          sizes: formData.sizes,
+          colors: formData.colors,
+          images: images.map(img => img.name),
+        });
 
-      if (response.ok) {
+        result = await productsAPI.create(formDataToSend);
         console.log('Product created successfully:', result);
         // Reset form and close modal
         handleCancel();
-      } else {
-        console.error('Error creating product:', result);
-        alert(`Error creating product: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Error creating product. Please try again.');
+      const action = editMode ? 'updating' : 'creating';
+      alert(`Error ${action} product. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      originalPrice: '',
-      categoryId: '',
-      stock: 0,
-      isActive: true,
-      featured: false,
-      sizes: [],
-      colors: [],
-    });
-    setImages([]);
-    setImagePreviews([]);
-    setModalOpen(false);
+    if (editMode && onCancel) {
+      onCancel();
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        originalPrice: '',
+        categoryId: '',
+        stock: 0,
+        isActive: true,
+        featured: false,
+        sizes: [],
+        colors: [],
+      });
+      setImages([]);
+      setImagePreviews([]);
+      setModalOpen(false);
+    }
   };
 
   const handleOpenModal = () => {
@@ -173,24 +234,11 @@ const ProductAdd = () => {
     console.log('Modal opened');
   };
 
-  return (
-    <>
-      <Button
-        leftSection={<IconPlus size={16} />}
-        onClick={handleOpenModal}
-      >
-        Add Product
-      </Button>
-
-      <Modal
-        opened={modalOpen}
-        onClose={handleCancel}
-        title="Add New Product"
-        size="xl"
-      >
-        <form onSubmit={handleSubmit}>
-          <Stack gap="md">
-            <Text size="lg" fw={600}>Basic Information</Text>
+  // Form component
+  const formContent = (
+    <form onSubmit={handleSubmit}>
+      <Stack gap="md">
+        <Text size="lg" fw={600}>Basic Information</Text>
             
             <Grid>
               <Grid.Col span={{ base: 12, sm: 8 }}>
@@ -403,11 +451,34 @@ const ProductAdd = () => {
                 loading={isSubmitting}
                 disabled={!formData.name.trim() || !formData.description.trim() || !formData.price || isSubmitting}
               >
-                {isSubmitting ? 'Creating...' : 'Create Product'}
+                {isSubmitting ? (editMode ? 'Updating...' : 'Creating...') : (editMode ? 'Update Product' : 'Create Product')}
               </Button>
             </Group>
           </Stack>
-        </form>
+    </form>
+  );
+
+  // Return different layouts based on mode
+  if (editMode) {
+    return formContent;
+  }
+
+  return (
+    <>
+      <Button
+        leftSection={<IconPlus size={16} />}
+        onClick={handleOpenModal}
+      >
+        Add Product
+      </Button>
+
+      <Modal
+        opened={modalOpen}
+        onClose={handleCancel}
+        title="Add New Product"
+        size="xl"
+      >
+        {formContent}
       </Modal>
     </>
   );

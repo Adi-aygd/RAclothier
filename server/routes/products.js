@@ -167,7 +167,10 @@ router.post(
       // Validate required fields
       if (!name || !description || !price) {
         return res.status(400).json({
-          error: 'Name, description, and price are required',
+          type: 'error',
+          status_code: 400,
+          message: 'Name, description, and price are required',
+          result: null,
         });
       }
 
@@ -179,7 +182,12 @@ router.post(
           .doc(categoryId)
           .get();
         if (!categoryDoc.exists) {
-          return res.status(400).json({ error: 'Category not found' });
+          return res.status(400).json({
+            type: 'error',
+            status_code: 400,
+            message: 'Category not found',
+            result: null,
+          });
         }
         categoryData = categoryDoc.data();
       }
@@ -261,7 +269,12 @@ router.post(
       });
     } catch (error) {
       console.error('Create product error:', error);
-      res.status(500).json({ error: 'Server error' });
+      res.status(500).json({
+        type: 'error',
+        status_code: 500,
+        message: 'Server error',
+        result: null,
+      });
     }
   }
 );
@@ -293,7 +306,12 @@ router.put(
       // Check if product exists
       const productDoc = await db.collection('products').doc(id).get();
       if (!productDoc.exists) {
-        return res.status(404).json({ error: 'Product not found' });
+        return res.status(404).json({
+          type: 'error',
+          status_code: 404,
+          message: 'Product not found',
+          result: null,
+        });
       }
 
       const updateData = {
@@ -322,7 +340,12 @@ router.put(
           .doc(categoryId)
           .get();
         if (!categoryDoc.exists) {
-          return res.status(400).json({ error: 'Category not found' });
+          return res.status(400).json({
+            type: 'error',
+            status_code: 400,
+            message: 'Category not found',
+            result: null,
+          });
         }
         updateData.categoryId = categoryId;
         updateData.categoryName = categoryDoc.data().name;
@@ -379,10 +402,20 @@ router.put(
 
       await db.collection('products').doc(id).update(updateData);
 
-      res.json({ message: 'Product updated successfully' });
+      res.status(200).json({
+        type: 'success',
+        status_code: 200,
+        message: 'Product updated successfully',
+        result: null,
+      });
     } catch (error) {
       console.error('Update product error:', error);
-      res.status(500).json({ error: 'Server error' });
+      res.status(500).json({
+        type: 'error',
+        status_code: 500,
+        message: 'Server error',
+        result: null,
+      });
     }
   }
 );
@@ -411,10 +444,20 @@ router.delete('/:id', verifyFirebaseToken, requireAdmin, async (req, res) => {
 
     await db.collection('products').doc(id).delete();
 
-    res.json({ message: 'Product deleted successfully' });
+    res.status(200).json({
+      type: 'success',
+      status_code: 200,
+      message: 'Product deleted successfully',
+      result: null,
+    });
   } catch (error) {
     console.error('Delete product error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      type: 'error',
+      status_code: 500,
+      message: 'Server error',
+      result: null,
+    });
   }
 });
 
@@ -431,10 +474,20 @@ router.get('/categories/list', async (req, res) => {
       });
     });
 
-    res.json(categories);
+    res.status(200).json({
+      type: 'success',
+      status_code: 200,
+      message: 'Categories fetched successfully',
+      result: categories,
+    });
   } catch (error) {
     console.error('Get categories error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      type: 'error',
+      status_code: 500,
+      message: 'Server error',
+      result: null,
+    });
   }
 });
 

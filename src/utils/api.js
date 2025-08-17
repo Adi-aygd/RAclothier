@@ -82,15 +82,15 @@ export const authAPI = {
 export const categoriesAPI = {
   getAll: () => apiRequest('/categories'),
   getById: (id) => apiRequest(`/categories/${id}`),
-  create: (categoryData) =>
+  create: (formData) =>
     apiRequest('/categories', {
       method: 'POST',
-      body: JSON.stringify(categoryData),
+      body: formData, // FormData for file uploads
     }),
-  update: (id, categoryData) =>
+  update: (id, formData) =>
     apiRequest(`/categories/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(categoryData),
+      body: formData, // FormData for file uploads
     }),
   delete: (id) =>
     apiRequest(`/categories/${id}`, {

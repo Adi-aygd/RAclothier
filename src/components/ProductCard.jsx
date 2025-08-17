@@ -4,7 +4,7 @@ import { Card, Image, Text, Group, ActionIcon } from '@mantine/core';
 import { IconShoppingCart } from '@tabler/icons-react';
 import placeholder from '../assets/product_placeholder.jpg';
 
-const ProductCard = ({ product, onClick }) => {
+const ProductCard = ({ product, onClick, onAddToCart }) => {
   return (
     <Card
       shadow="sm"
@@ -36,9 +36,19 @@ const ProductCard = ({ product, onClick }) => {
       </Card.Section>
       <Group justify="space-between" mt="md">
         <Text fw={500}>{product?.name}</Text>
-        <ActionIcon variant="subtle" color="gray" size="sm">
-          <IconShoppingCart size={16} />
-        </ActionIcon>
+        {onAddToCart && (
+          <ActionIcon 
+            variant="subtle" 
+            color="gray" 
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+          >
+            <IconShoppingCart size={16} />
+          </ActionIcon>
+        )}
       </Group>
       <Group justify="space-between">
         <Text size="lg" fw={700} c="green">

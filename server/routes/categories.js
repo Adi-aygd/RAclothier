@@ -1,6 +1,6 @@
 const express = require('express');
 const { db } = require('../config/firebase');
-const { verifyJWT, requireAdmin } = require('../middleware/auth');
+const { verifyFirebaseToken, requireAdmin } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 
@@ -73,7 +73,12 @@ router.get('/:id', async (req, res) => {
     const doc = await db.collection('categories').doc(id).get();
 
     if (!doc.exists) {
-      return res.status(404).json({ error: 'Category not found' });
+      return res.status(404).json({
+        type: 'error',
+        status_code: 404,
+        message: 'Category not found',
+        result: null,
+      });
     }
 
     const category = {
@@ -81,17 +86,27 @@ router.get('/:id', async (req, res) => {
       ...doc.data(),
     };
 
-    res.json(category);
+    res.status(200).json({
+      type: 'success',
+      status_code: 200,
+      message: 'Category fetched successfully',
+      result: category,
+    });
   } catch (error) {
     console.error('Get category error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      type: 'error',
+      status_code: 500,
+      message: 'Server error',
+      result: null,
+    });
   }
 });
 
 // Create category (admin only)
 router.post(
   '/',
-  verifyJWT,
+  verifyFirebaseToken,
   requireAdmin,
   upload.single('image'),
   async (req, res) => {
@@ -99,7 +114,12 @@ router.post(
       const { name, description, isActive = true } = req.body;
 
       if (!name) {
-        return res.status(400).json({ error: 'Category name is required' });
+        return res.status(400).json({
+          type: 'error',
+          status_code: 400,
+          message: 'Category name is required',
+          result: null,
+        });
       }
 
       const categoryData = {
@@ -149,16 +169,22 @@ router.post(
       const docRef = await db.collection('categories').add(categoryData);
 
       res.status(201).json({
+        type: 'success',
+        status_code: 201,
         message: 'Category created successfully',
-        categoryId: docRef.id,
-        category: {
+        result: {
           id: docRef.id,
           ...categoryData,
         },
       });
     } catch (error) {
       console.error('Create category error:', error);
-      res.status(500).json({ error: 'Server error' });
+      res.status(500).json({
+        type: 'error',
+        status_code: 500,
+        message: 'Server error',
+        result: null,
+      });
     }
   }
 );
@@ -166,7 +192,7 @@ router.post(
 // Update category (admin only)
 router.put(
   '/:id',
-  verifyJWT,
+  verifyFirebaseToken,
   requireAdmin,
   upload.single('image'),
   async (req, res) => {
@@ -177,7 +203,12 @@ router.put(
       // Check if category exists
       const categoryDoc = await db.collection('categories').doc(id).get();
       if (!categoryDoc.exists) {
-        return res.status(404).json({ error: 'Category not found' });
+        return res.status(404).json({
+          type: 'error',
+          status_code: 404,
+          message: 'Category not found',
+          result: null,
+        });
       }
 
       const updateData = {
@@ -226,23 +257,38 @@ router.put(
 
       await db.collection('categories').doc(id).update(updateData);
 
-      res.json({ message: 'Category updated successfully' });
+      res.status(200).json({
+        type: 'success',
+        status_code: 200,
+        message: 'Category updated successfully',
+        result: null,
+      });
     } catch (error) {
       console.error('Update category error:', error);
-      res.status(500).json({ error: 'Server error' });
+      res.status(500).json({
+        type: 'error',
+        status_code: 500,
+        message: 'Server error',
+        result: null,
+      });
     }
   }
 );
 
 // Delete category (admin only)
-router.delete('/:id', verifyJWT, requireAdmin, async (req, res) => {
+router.delete('/:id', verifyFirebaseToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
     // Check if category exists
     const categoryDoc = await db.collection('categories').doc(id).get();
     if (!categoryDoc.exists) {
-      return res.status(404).json({ error: 'Category not found' });
+      return res.status(404).json({
+        type: 'error',
+        status_code: 404,
+        message: 'Category not found',
+        result: null,
+      });
     }
 
     // Check if category has products
@@ -252,17 +298,30 @@ router.delete('/:id', verifyJWT, requireAdmin, async (req, res) => {
       .limit(1)
       .get();
     if (!productsSnapshot.empty) {
-      return res
-        .status(400)
-        .json({ error: 'Cannot delete category with existing products' });
+      return res.status(400).json({
+        type: 'error',
+        status_code: 400,
+        message: 'Cannot delete category with existing products',
+        result: null,
+      });
     }
 
     await db.collection('categories').doc(id).delete();
 
-    res.json({ message: 'Category deleted successfully' });
+    res.status(200).json({
+      type: 'success',
+      status_code: 200,
+      message: 'Category deleted successfully',
+      result: null,
+    });
   } catch (error) {
     console.error('Delete category error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({
+      type: 'error',
+      status_code: 500,
+      message: 'Server error',
+      result: null,
+    });
   }
 });
 
