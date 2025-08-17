@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+server/serviceAccountKey.json
+server/.env
+server/serviceAccountKey*.json

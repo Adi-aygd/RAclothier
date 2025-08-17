@@ -40,7 +40,7 @@ const Home = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={() => navigate('/shop')}
+              onClick={() => navigate('/products')}
               className="btn-primary bg-white text-black hover:bg-gray-200 text-lg px-8 py-4"
             >
               Explore Collection

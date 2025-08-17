@@ -74,7 +74,7 @@ const Checkout = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-          <button onClick={() => navigate('/shop')} className="btn-primary">
+          <button onClick={() => navigate('/products')} className="btn-primary">
             Continue Shopping
           </button>
         </div>

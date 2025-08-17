@@ -25,7 +25,7 @@ const Cart = () => {
           <ShoppingBag size={64} className="mx-auto text-gray-400 mb-4" />
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
           <p className="text-gray-600 mb-8">Discover our premium collection and find your perfect style.</p>
-          <Link to="/shop" className="btn-primary">
+          <Link to="/products" className="btn-primary">
             Explore Collection
           </Link>
         </div>
@@ -49,25 +49,29 @@ const Cart = () => {
               <h2 className="text-xl font-semibold mb-6">Cart Items ({cart.length})</h2>
               
               <div className="space-y-6">
-                {cart.map((item, ) => (
-                  <div key={`${item.id}-${item.size}-${item.color.name}`} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+                {cart.map((item, index) => (
+                  <div key={`${item.id}-${item.size || 'no-size'}-${item.color || 'no-color'}-${index}`} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
                     <img 
-                      src={item.images[0]} 
+                      src={item.images?.[0] || '/src/assets/product_placeholder.jpg'} 
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded-lg"
                     />
                     
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-gray-600 text-sm">Size: {item.size}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-gray-600 text-sm">Color:</span>
-                        <div 
-                          className="w-4 h-4 rounded-full border border-gray-300"
-                          style={{ backgroundColor: item.color.code }}
-                        />
-                        <span className="text-gray-600 text-sm">{item.color.name}</span>
-                      </div>
+                      {item.size && (
+                        <p className="text-gray-600 text-sm">Size: {item.size}</p>
+                      )}
+                                              {item.color && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-gray-600 text-sm">Color:</span>
+                            <div 
+                              className="w-4 h-4 rounded-full border border-gray-300"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className="text-gray-600 text-sm">{item.color}</span>
+                          </div>
+                        )}
                     </div>
                     
                     <div className="flex items-center gap-3">
