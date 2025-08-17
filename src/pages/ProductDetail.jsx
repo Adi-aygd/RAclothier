@@ -212,12 +212,13 @@ const ProductDetail = () => {
             </div>
 
             {/* Size Selection */}
+            {product?.sizes && product?.sizes.length > 0 && (
             <div>
               <h3 className="font-semibold mb-3 text-lg">
                 Size: {selectedSize}
               </h3>
               <div className="flex gap-3">
-                {product?.sizes.map((size) => (
+                {product?.sizes?.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
@@ -232,6 +233,7 @@ const ProductDetail = () => {
                 ))}
               </div>
             </div>
+            )}
 
             {/* Color Selection */}
             {product?.colors && product.colors.length > 0 && (
