@@ -8,7 +8,8 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import ProductDetail from './pages/ProductDetail';
 import Checkout from './pages/checkout/Checkout';
-import OrderConfirmation from './pages/OrderConfirmation';
+import EsewaPaymentConfirmation from './pages/checkout/EsewaPaymentConfirmation';
+import CodOrderConfirmation from './pages/checkout/CodOrderConfirmation';
 import About from './pages/About';
 import Dashboard from './pages/dashboard/index';
 import useAuth from './hooks/useAuth';
@@ -53,7 +54,9 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/order-confirmation" element={<OrderConfirmation />} />
+        <Route path="/payment-confirmation" element={<EsewaPaymentConfirmation />} />
+        <Route path="/order-confirmation" element={<CodOrderConfirmation />} />
+
         <Route path="/about" element={<About />} />
 
         <Route

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import CryptoJS from 'crypto-js';
 import { 
   Container, 
   Stepper, 
@@ -17,7 +16,7 @@ import {
   ActionIcon
 } from '@mantine/core';
 import { IconArrowLeft, IconCreditCard, IconShield, IconTruckDelivery } from '@tabler/icons-react';
-
+import { handleEsewaPayment } from '../../utils/payment';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import useStore from '../../store/useStore';
@@ -74,7 +73,6 @@ const Checkout = () => {
 
   const nextStep = async () => {
     if (active === 0) {
-      // Validate shipping info before proceeding
       const isValid = await trigger();
       if (!isValid) {
         toast.error('Please fill in all required shipping information');
@@ -92,66 +90,6 @@ const Checkout = () => {
 
   const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
 
-  const handleEsewaPayment = (total_amount) => {
-    console.log('total_amount', total_amount);
-    // Generate signature using HMAC SHA256 as per eSewa documentation
-    const generateSignature = (total_amount, transaction_uuid, product_code) => {
-      const secret_key = '8gBm/:&EnhH.1/q';
-      const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
-      
-      // Generate HMAC SHA256 signature as per eSewa documentation
-      const hash = CryptoJS.HmacSHA256(message, secret_key);
-      const signature = CryptoJS.enc.Base64.stringify(hash);
-      
-      return signature;
-    };
-
-    // Use actual cart values for payment
-    const transaction_uuid = `${Date.now()}`;
-    const product_code = 'EPAYTEST';
-    // total amount with tax and shipping is total_amount
-    // const tax_amount = 
-    
-    const esewaConfig = {
-      amount: total_amount,
-      transaction_uuid: transaction_uuid,
-      product_code: product_code,
-      product_service_charge: 0,
-      product_delivery_charge: 0,
-      success_url: `${window.location.origin}/order-confirmation`,
-      failure_url: `${window.location.origin}/checkout`,
-      signed_field_names: 'total_amount,transaction_uuid,product_code',
-      signature: generateSignature(total_amount, transaction_uuid, product_code)
-    };
-
-    // Debug log for testing
-    console.log('eSewa Payment Config:', esewaConfig);
-    console.log('Signature message:', `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`);
-    console.log('Generated signature:', esewaConfig.signature);
-    
-    // Additional debugging - show the exact form data being sent
-    console.log('Form data being sent to eSewa:');
-    Object.keys(esewaConfig).forEach(key => {
-      console.log(`${key}: ${esewaConfig[key]}`);
-    });
-
-    // Create form for eSewa payment
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
-    
-    Object.keys(esewaConfig).forEach(key => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = esewaConfig[key];
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-  };
 
   const handlePlaceOrder = async (data) => {
     try {
@@ -168,7 +106,7 @@ const Checkout = () => {
           ...data,
           paymentMethod: 'cod',
           cart: cart,
-          total: total,
+          total: total_amount,
           orderDate: new Date().toISOString(),
           status: 'pending'
         };

@@ -9,7 +9,7 @@ export const formatStringToTitleCase = (str) => {
 
 /**
  * Convert text with new line to html <br> tags
- * Example: Egranin shirt – style meets comfort! ✨\r\n\r\n👕 premium quality
+ * Example: line1\r\n\r\nline2
  * @param {string} text
  * @returns {string}
  */

@@ -3,9 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Container, Paper, Title, Text, Button, Group, Stack, Alert, Box, Grid } from '@mantine/core';
 import { IconCheck, IconTruckDelivery, IconMail, IconAlertCircle, IconX, IconShield } from '@tabler/icons-react';
 import CryptoJS from 'crypto-js';
-import useStore from '../store/useStore';
+import useStore from '../../store/useStore';
 
-const OrderConfirmation = () => {
+const EsewaPaymentConfirmation = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { clearCart } = useStore();
@@ -13,7 +13,7 @@ const OrderConfirmation = () => {
   const [orderData, setOrderData] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
 
-  // Function to verify eSewa payment status (copied from Checkout)
+  // Function to verify eSewa payment status
   const verifyEsewaPayment = async (transaction_uuid, total_amount, product_code) => {
     try {
       const response = await fetch(
@@ -128,7 +128,7 @@ const OrderConfirmation = () => {
       case 'success':
         return {
           title: 'Payment Successful!',
-          message: 'Your payment of रू ' + orderData.total_amount + ' has been processed and your order is confirmed.',
+          message: 'Your payment of रू ' + (orderData?.total_amount || '') + ' has been processed and your order is confirmed.',
           color: 'green'
         };
       case 'failed':
@@ -194,13 +194,15 @@ const OrderConfirmation = () => {
                     </Stack>
                   </Grid.Col>
                   {/* Transaction ID */}
+                  {orderData?.transaction_code && (
                   <Grid.Col span={{ base: 12, md: 4 }}>
                     <Stack align="center" gap="md">
-                      <IconShield size={40} color="#7c4dff" />
+                      <IconShield size={40} color="orange" />
                       <Text fw={600}>Transaction ID</Text>
-                      <Text c="dimmed">{orderData.transaction_code}</Text>
-                    </Stack>
-                  </Grid.Col>
+                        <Text c="dimmed">{orderData?.transaction_code}</Text>
+                      </Stack>
+                    </Grid.Col>
+                  )}
                 </Grid>
               </Paper>
             )}
@@ -229,4 +231,4 @@ const OrderConfirmation = () => {
   );
 };
 
-export default OrderConfirmation;
+export default EsewaPaymentConfirmation;
