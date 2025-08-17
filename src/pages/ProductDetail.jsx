@@ -217,7 +217,7 @@ const ProductDetail = () => {
                 Size: {selectedSize}
               </h3>
               <div className="flex gap-3">
-                {product?.sizes.map((size) => (
+                {product?.sizes?.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}

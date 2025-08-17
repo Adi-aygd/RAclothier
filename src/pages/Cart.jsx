@@ -91,8 +91,8 @@ const Cart = () => {
                     </div>
                     
                     <div className="text-right">
-                      <p className="font-bold text-lg">${(item.price * item.quantity).toFixed(2)}</p>
-                      <p className="text-gray-500 text-sm">${item.price} each</p>
+                      <p className="font-bold text-lg">रु {(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-gray-500 text-sm">रु {item.price} each</p>
                     </div>
                     
                     <button
