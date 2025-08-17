@@ -22,8 +22,8 @@ import {
 } from '@mantine/core';
 import { IconShoppingCart } from '@tabler/icons-react';
 import { productsAPI, categoriesAPI } from '../utils/api';
-import placeholder from '../assets/product_placeholder.jpg';
 import { useNavigate } from 'react-router-dom';
+import ProductCard from '../components/ProductCard';
 const PAGE_SIZE = 12;
 
 const Shop = () => {
@@ -98,7 +98,13 @@ const Shop = () => {
                   Price
                 </Text>
                 <Group gap="xs" align="end">
-                  <NumberInput label="From" placeholder="0" min={0} size="xs" w={100} />
+                  <NumberInput
+                    label="From"
+                    placeholder="0"
+                    min={0}
+                    size="xs"
+                    w={100}
+                  />
                   <Text>-</Text>
                   <NumberInput
                     label="To"
@@ -196,32 +202,19 @@ const Shop = () => {
                       style={{ cursor: 'pointer' }}
                       onClick={() => navigate(`/product/${product.id}`)}
                     >
-                      <Card.Section
-                        style={{
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <Image
-                          src={product.images?.[0] || placeholder}
-                          alt={product.name}
-                          h={250}
-                          width="100%"
-                          fit="cover"
-                          radius="md"
-                          style={{
-                            transition: 'transform 0.3s ease-in-out',
-                            ':hover': {
-                              transform: 'scale(1.1)',
-                            },
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.transform = 'scale(1.1)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.transform = 'scale(1)';
-                          }}
-                        />
-                      </Card.Section>
+                      <Grid gutter="md">
+                        {filteredProducts.map((product) => (
+                          <Grid.Col
+                            key={product.id}
+                            span={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                          >
+                            <ProductCard
+                              product={product}
+                              onClick={() => navigate(`/product/${product.id}`)}
+                            />
+                          </Grid.Col>
+                        ))}
+                      </Grid>
                       <Group justify="space-between" mt="md">
                         <Text fw={500}>{product.name}</Text>
                         <ActionIcon variant="subtle" color="gray" size="sm">

@@ -38,6 +38,7 @@ router.get('/', async (req, res) => {
       page = 1,
       featured,
       isActive,
+      categoryId,
     } = req.query;
 
     let query = db.collection('products');
@@ -46,7 +47,12 @@ router.get('/', async (req, res) => {
     if (isActive !== undefined) {
       query = query.where('isActive', '==', isActive === 'true');
     }
-    
+
+    // Filter by categoryId
+    if (categoryId !== undefined) {
+      query = query.where('categoryId', '==', categoryId);
+    }
+
     // Apply featured filter
     if (featured !== undefined) {
       query = query.where('featured', '==', featured === 'true');

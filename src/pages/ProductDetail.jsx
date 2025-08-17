@@ -7,12 +7,12 @@ import {
   Minus,
   Plus,
   ArrowLeft,
-  Truck,
-  Shield,
 } from 'lucide-react';
 import { productsAPI } from '../utils/api';
 import useStore from '../store/useStore';
 import toast from 'react-hot-toast';
+import ProductCard from '../components/ProductCard';
+import placeholder from '../assets/product_placeholder.jpg';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -26,13 +26,13 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
         const response = await productsAPI.getById(id);
-        console.info('response', response);
         const productData = response.result;
 
         if (productData) {
@@ -41,8 +41,9 @@ const ProductDetail = () => {
           if (productData.sizes && productData.sizes.length > 0) {
             setSelectedSize(productData.sizes[0]);
           }
-          // Since the API response doesn't include colors, we'll set a default
-          setSelectedColor({ name: 'Default', code: '#000000' });
+          if (productData.colors && productData.colors.length > 0) {
+            setSelectedColor(productData.colors[0]);
+          }
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -57,6 +58,17 @@ const ProductDetail = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      if (product) {
+        const response = await productsAPI.getAll({ categoryId: product.categoryId, limit: 4 });
+        const relatedProducts = response.result.products.filter(p => p.id !== id);
+        setRelatedProducts(relatedProducts);
+      }
+    };
+    fetchRelatedProducts();
+  }, [product]);
+
   const handleAddToCart = () => {
     if (!isAuthenticated) {
       toast.error('Please sign in to add items to cart');
@@ -64,7 +76,6 @@ const ProductDetail = () => {
       return;
     }
 
-    // if product has sizes then check if size is selected
     if (product?.sizes && !selectedSize) {
       toast.error('Please select size');
       return;
@@ -133,15 +144,15 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-sm">
               <img
-                src={product.images[selectedImage]}
-                alt={product.name}
+                src={product?.images?.[selectedImage] || placeholder}
+                alt={product?.name}
                 className="w-full h-full object-cover"
               />
             </div>
 
             {/* Image Thumbnails */}
             <div className="flex gap-4">
-              {product.images.map((image, index) => (
+              {product?.images?.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
@@ -150,12 +161,20 @@ const ProductDetail = () => {
                   }`}
                 >
                   <img
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
+                    src={image || placeholder}
+                    alt={`${product?.name} ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
-              ))}
+              )) || (
+                <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200">
+                  <img
+                    src={placeholder}
+                    alt="No image available"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -163,7 +182,7 @@ const ProductDetail = () => {
           <div className="space-y-6">
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2 capitalize">
-                {product.name}
+                {product?.name}
               </h1>
               {/* <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center">
@@ -184,7 +203,7 @@ const ProductDetail = () => {
             {/* Price */}
             <div className="flex items-center gap-4">
               <span className="text-3xl font-bold text-gray-900">
-                ${product.price}
+              रू {product?.price}
               </span>
             </div>
 
@@ -194,7 +213,7 @@ const ProductDetail = () => {
                 Size: {selectedSize}
               </h3>
               <div className="flex gap-3">
-                {product.sizes.map((size) => (
+                {product?.sizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
@@ -226,7 +245,7 @@ const ProductDetail = () => {
                   </span>
                   <button
                     onClick={() =>
-                      setQuantity(Math.min(product.stock, quantity + 1))
+                      setQuantity(Math.min(product?.stock, quantity + 1))
                     }
                     className="p-3 hover:bg-gray-100 transition-colors"
                   >
@@ -234,11 +253,12 @@ const ProductDetail = () => {
                   </button>
                 </div>
                 {/*  show stock availability. if stock is 0, show out of stock if stock < 10, show low stock  if <0 show nothing.*/}
-                {product.stock < 10 ? (
+                {product?.stock < 10 && product?.stock > 0 && (
                   <span className="text-sm bg-orange-600 text-white px-3 py-2 rounded-full">
                     Low Stock
                   </span>
-                ) : (
+                )}
+                {product?.stock >= 10 && (
                   <span className="text-sm bg-green-500 text-white px-3 py-2 rounded-full">
                     In Stock
                   </span>
@@ -250,15 +270,15 @@ const ProductDetail = () => {
             <div className="flex gap-4">
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={product?.stock === 0}
                 className={`flex-1 flex items-center justify-center gap-2 text-lg py-4 rounded-lg transition-all ${
-                  product.stock < 1
+                  product?.stock < 1
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'btn-primary'
                 }`}
               >
                 <ShoppingBag size={20} />
-                {product.stock < 1 ? 'Out of Stock' : 'Add to Cart'}
+                {product?.stock < 1 ? 'Out of Stock' : 'Add to Cart'}
               </button>
               <button
                 onClick={() => setIsLiked(!isLiked)}
@@ -279,7 +299,7 @@ const ProductDetail = () => {
               </h3>
               <ul className="space-y-2 text-gray-600">
                 <li className="flex items-center gap-2">
-                  {product.description}
+                  {product?.description}
                 </li>
               </ul>
             </div>
@@ -290,9 +310,9 @@ const ProductDetail = () => {
         <div className="mt-20 w-full text-center">
           <h2 className="text-3xl font-bold mb-12">You might also like</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center text-gray-500 py-8">
-              Related products will be loaded here
-            </div>
+            {relatedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} onClick={() => navigate(`/product/${product.id}`)} />
+            ))}
           </div>
         </div>
       </div>
