@@ -20,7 +20,7 @@ import {
   Divider,
   ActionIcon,
 } from '@mantine/core';
-import { IconShoppingCart } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
 import { productsAPI, categoriesAPI } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -36,19 +36,27 @@ const Shop = () => {
   });
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('name');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
   // Fetch products from API
   useEffect(() => {
     setLoading(true);
+    const params = {
+      page: pagination.page,
+      limit: pagination.limit,
+      sort: sortBy,
+    };
+    if (selectedCategory) {
+      params.categoryId = selectedCategory;
+    }
     productsAPI
-      .getAll({ page: pagination.page, limit: pagination.limit, sort: sortBy })
+      .getAll(params)
       .then((res) => {
         setProducts(res.result.products);
         setPagination(res.result.pagination);
       })
       .finally(() => setLoading(false));
-  }, [pagination.page, sortBy]);
+  }, [pagination.page, sortBy, selectedCategory]);
 
   // Fetch categories from API
   useEffect(() => {
@@ -56,11 +64,6 @@ const Shop = () => {
       setCategories(res.result);
     });
   }, []);
-
-  const filteredProducts =
-    selectedCategory === 'All'
-      ? products
-      : products.filter((p) => p.categoryName === selectedCategory);
 
   return (
     <Container size="xl" py="md">
@@ -131,23 +134,29 @@ const Shop = () => {
 
               {/* Category */}
               <Box mb="lg">
-                <Text fw={500} mb="sm">
-                  Category
-                </Text>
+                <Group justify="space-between">
+                  <Text fw={500} mb="sm">
+                    Category
+                  </Text>
+                  {selectedCategory && (
+                  <ActionIcon
+                    variant="subtle"
+                    size="xs"
+                    color="gray"
+                    onClick={() => setSelectedCategory('')}
+                  >
+                      <IconX size={16} />
+                    </ActionIcon>
+                  )}
+                </Group>
                 <Stack gap="xs">
                   {categories.map((category) => (
                     <Checkbox
                       key={category.id}
                       label={category.name}
                       size="sm"
-                      checked={selectedCategory === category.name}
-                      onChange={() =>
-                        setSelectedCategory(
-                          selectedCategory === category.name
-                            ? 'All'
-                            : category.name
-                        )
-                      }
+                      checked={selectedCategory === category.id}
+                      onChange={() => setSelectedCategory(category.id)}
                     />
                   ))}
                 </Stack>
@@ -188,50 +197,19 @@ const Shop = () => {
               </Grid>
             ) : (
               <Grid gutter="md">
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <Grid.Col
                     key={product.id}
                     span={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                   >
-                    <Card
-                      shadow="sm"
-                      padding="lg"
-                      radius="md"
-                      withBorder
-                      h="100%"
-                      style={{ cursor: 'pointer' }}
+                    <ProductCard
+                      product={product}
                       onClick={() => navigate(`/product/${product.id}`)}
-                    >
-                      <Grid gutter="md">
-                        {filteredProducts.map((product) => (
-                          <Grid.Col
-                            key={product.id}
-                            span={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-                          >
-                            <ProductCard
-                              product={product}
-                              onClick={() => navigate(`/product/${product.id}`)}
-                            />
-                          </Grid.Col>
-                        ))}
-                      </Grid>
-                      <Group justify="space-between" mt="md">
-                        <Text fw={500}>{product.name}</Text>
-                        <ActionIcon variant="subtle" color="gray" size="sm">
-                          <IconShoppingCart size={16} />
-                        </ActionIcon>
-                      </Group>
-                      <Group justify="space-between">
-                        <Text size="lg" fw={700} c="green">
-                          रू {product.price}
-                        </Text>
-                      </Group>
-                    </Card>
+                    />
                   </Grid.Col>
                 ))}
               </Grid>
             )}
-
             {/* Pagination */}
             <Group justify="center" mt="md">
               <Pagination

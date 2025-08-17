@@ -9,6 +9,7 @@ const ProductCard = ({ product, onClick }) => {
     <Card
       shadow="sm"
       p="lg"
+      h="100%"
       radius="md"
       withBorder
       style={{ cursor: 'pointer' }}
@@ -18,7 +19,7 @@ const ProductCard = ({ product, onClick }) => {
         <Image
           src={product?.images?.[0] || placeholder}
           alt={product?.name}
-          height={250}
+          h={250}
           width="100%"
           fit="cover"
           radius="md"
