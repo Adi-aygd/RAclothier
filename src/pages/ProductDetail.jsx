@@ -1,13 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Star,
-  Heart,
-  ShoppingBag,
-  Minus,
-  Plus,
-  ArrowLeft,
-} from 'lucide-react';
+import { Star, Heart, ShoppingBag, Minus, Plus, ArrowLeft } from 'lucide-react';
 import { productsAPI } from '../utils/api';
 import useStore from '../store/useStore';
 import toast from 'react-hot-toast';
@@ -65,8 +58,13 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       if (product) {
-        const response = await productsAPI.getAll({ categoryId: product.categoryId, limit: 4 });
-        const relatedProducts = response.result.products.filter(p => p.id !== id);
+        const response = await productsAPI.getAll({
+          categoryId: product.categoryId,
+          limit: 4,
+        });
+        const relatedProducts = response.result.products.filter(
+          (p) => p.id !== id
+        );
         setRelatedProducts(relatedProducts);
       }
     };
@@ -207,7 +205,7 @@ const ProductDetail = () => {
             {/* Price */}
             <div className="flex items-center gap-4">
               <span className="text-3xl font-bold text-gray-900">
-              रू {product?.price}
+                रू {product?.price}
               </span>
             </div>
 
@@ -232,6 +230,25 @@ const ProductDetail = () => {
                 ))}
               </div>
             </div>
+
+            {/* Color Selection */}
+            {product?.colors && product.colors.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3 text-lg">
+                  Color: {selectedColor}
+                </h3>
+                <div className="flex gap-3">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color} // Ensure this is unique
+                      onClick={() => setSelectedColor(color)}
+                      className="w-8 h-8 rounded-full border border-gray-300"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Quantity */}
             <div>
@@ -315,7 +332,11 @@ const ProductDetail = () => {
           <h2 className="text-3xl font-bold mb-12">You might also like</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {relatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onClick={() => navigate(`/product/${product.id}`)} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onClick={() => navigate(`/product/${product.id}`)}
+              />
             ))}
           </div>
         </div>

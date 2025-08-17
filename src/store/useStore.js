@@ -1,19 +1,25 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 
 const useStore = create(
   devtools(
-    (set, get) => ({
-      // User state
-      user: null,
-      isAuthenticated: false,
+    persist(
+      (set, get) => ({
+        // User state
+        user: null,
+        isAuthenticated: false,
 
-      // Cart state
-      cart: [],
-      cartTotal: 0,
+        // Cart state
+        cart: [],
+        cartTotal: 0,
 
-      // UI state
-      isLoading: true, // Start with loading true to check auth on mount
+        // UI state
+        isLoading: true, // Start with loading true to check auth on mount
+
+        // Initialize cart from localStorage on mount
+        initializeCart: () => {
+          get().updateCartTotal();
+        },
 
       // Actions
       login: (userData) =>
@@ -32,8 +38,8 @@ const useStore = create(
         const existingItem = cart.find(
           (item) =>
             item.id === product.id &&
-            item.size === product.size &&
-            item.color === product.color
+            (item.size || null) === (product.size || null) &&
+            (item.color || null) === (product.color || null)
         );
 
         if (existingItem) {
@@ -41,8 +47,8 @@ const useStore = create(
             {
               cart: cart.map((item) =>
                 item.id === existingItem.id &&
-                item.size === existingItem.size &&
-                item.color === existingItem.color
+                (item.size || null) === (existingItem.size || null) &&
+                (item.color || null) === (existingItem.color || null)
                   ? { ...item, quantity: item.quantity + 1 }
                   : item
               ),
@@ -70,8 +76,8 @@ const useStore = create(
               (item) =>
                 !(
                   item.id === productId &&
-                  item.size === size &&
-                  item.color === color
+                  (item.size || null) === (size || null) &&
+                  (item.color || null) === (color || null)
                 )
             ),
           },
@@ -92,8 +98,8 @@ const useStore = create(
           {
             cart: cart.map((item) =>
               item.id === productId &&
-              item.size === size &&
-              item.color === color
+              (item.size || null) === (size || null) &&
+              (item.color || null) === (color || null)
                 ? { ...item, quantity }
                 : item
             ),
@@ -116,9 +122,16 @@ const useStore = create(
       setLoading: (loading) => set({ isLoading: loading }, false, 'setLoading'),
     }),
     {
-      name: 'ra-clothier-store', // Store name in DevTools
+      name: 'ra-clothier-cart', // localStorage key
+      partialize: (state) => ({ 
+        cart: state.cart,
+        cartTotal: state.cartTotal 
+      }), // Only persist cart-related state
     }
-  )
-);
+  ),
+  {
+    name: 'ra-clothier-store', // Store name in DevTools
+  }
+));
 
 export default useStore;

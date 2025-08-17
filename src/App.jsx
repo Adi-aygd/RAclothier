@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Home from './pages/Home';
@@ -20,7 +20,12 @@ function App() {
   // Initialize authentication state
   useAuth();
 
-  const { isAuthenticated, isLoading } = useStore();
+  const { isAuthenticated, isLoading, initializeCart } = useStore();
+
+  // Initialize cart from localStorage on app mount
+  useEffect(() => {
+    initializeCart();
+  }, [initializeCart]);
   if (isLoading) {
     return (
       <div className="App">
