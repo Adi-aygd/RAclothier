@@ -33,6 +33,8 @@ import classes from './dashboard.module.css';
 import UserProfile from './features/userProfile/UserProfile';
 import Category from './features/category/category';
 import Products from './features/products';
+import Orders from './features/orders';
+import UserOrders from './features/userOrders';
 const tabs = {
   user: [
     {
@@ -271,21 +273,7 @@ export default function Dashboard() {
           />
           <Route
             path="/user-orders"
-            element={
-              <div className={classes.content}>
-                <Text size="xl" fw={700} mb="md">
-                  Your Orders
-                </Text>
-                <Card withBorder padding="lg">
-                  <Text c="dimmed" ta="center" py="xl">
-                    No orders found. Start shopping to see your order history.
-                  </Text>
-                  <Button onClick={() => navigate('/products')}>
-                    Browse Products
-                  </Button>
-                </Card>
-              </div>
-            }
+            element={<UserOrders />}
           />
           <Route
             path="/wishlist"
@@ -368,9 +356,7 @@ export default function Dashboard() {
             path="/admin/products"
             element={
               <DashboardProtectedRoute requireAdmin={true}>
-                <div className={classes.content}>
-                  <Products />
-                </div>
+                <Products />
               </DashboardProtectedRoute>
             }
           />
@@ -386,16 +372,7 @@ export default function Dashboard() {
             path="/admin/orders"
             element={
               <DashboardProtectedRoute requireAdmin={true}>
-                <div className={classes.content}>
-                  <Text size="xl" fw={700} mb="md">
-                    Order Management
-                  </Text>
-                  <Card withBorder padding="lg">
-                    <Text c="dimmed" ta="center" py="xl">
-                      Order management interface will be implemented here.
-                    </Text>
-                  </Card>
-                </div>
+                <Orders />
               </DashboardProtectedRoute>
             }
           />

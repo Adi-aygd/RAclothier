@@ -11,16 +11,23 @@ import {
   Tooltip,
   NumberFormatter,
   Stack,
+  Button,
 } from '@mantine/core';
-import { IconEye, IconEdit, IconTrash } from '@tabler/icons-react';
+import { IconEye, IconEdit, IconTrash, IconCheck, IconX } from '@tabler/icons-react';
+import toast from 'react-hot-toast';
 import { formatRelativeTime } from '../../../../utils/formatDate';
 import { productsAPI } from '../../../../utils/api';
 import { useMantineReactTable, MantineReactTable } from 'mantine-react-table';
+import { convertTextToHtmlBr } from '../../../../utils/formatString';
+import ProductAdd from './productAdd';
 
 const ProductList = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [products, setProducts] = useState([]);
   
   const fetchProducts = useCallback(async () => {
@@ -47,19 +54,55 @@ const ProductList = () => {
   }, []);
 
   const handleEdit = useCallback((product) => {
-    console.log('Edit product:', product);
-    // TODO: Implement edit functionality
+    setSelectedProduct(product);
+    setEditModalOpen(true);
   }, []);
 
   const handleDelete = useCallback((product) => {
-    console.log('Delete product:', product);
-    // TODO: Implement delete functionality
+    setSelectedProduct(product);
+    setDeleteModalOpen(true);
   }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!selectedProduct) return;
+    
+    setIsDeleting(true);
+    try {
+      await productsAPI.delete(selectedProduct.id);
+      toast.success('Product deleted successfully');
+      
+      // Refresh the products list
+      fetchProducts();
+      setDeleteModalOpen(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error(error.message || 'Failed to delete product');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [selectedProduct, fetchProducts]);
 
   const handleCloseModal = useCallback(() => {
     setViewModalOpen(false);
     setSelectedProduct(null);
   }, []);
+
+  const handleCloseEditModal = useCallback(() => {
+    setEditModalOpen(false);
+    setSelectedProduct(null);
+  }, []);
+
+  const handleCloseDeleteModal = useCallback(() => {
+    setDeleteModalOpen(false);
+    setSelectedProduct(null);
+  }, []);
+
+  const handleProductUpdated = useCallback(() => {
+    fetchProducts();
+    setEditModalOpen(false);
+    setSelectedProduct(null);
+  }, [fetchProducts]);
 
   const columns = useMemo(
     () => [
@@ -94,7 +137,7 @@ const ProductList = () => {
         Cell: ({ cell }) => (
           <NumberFormatter
             value={cell.getValue()}
-            prefix="$"
+            prefix="रू "
             thousandSeparator
             decimalScale={2}
           />
@@ -109,7 +152,7 @@ const ProductList = () => {
           return originalPrice ? (
             <NumberFormatter
               value={originalPrice}
-              prefix="$"
+              prefix="रू "
               thousandSeparator
               decimalScale={2}
             />
@@ -254,7 +297,7 @@ const ProductList = () => {
                 </Table.Tr>
                 <Table.Tr>
                   <Table.Td style={{ fontWeight: 600 }}>Description:</Table.Td>
-                  <Table.Td>{selectedProduct.description}</Table.Td>
+                  <Table.Td><Text dangerouslySetInnerHTML={{ __html: convertTextToHtmlBr(selectedProduct.description) }} /></Table.Td>
                 </Table.Tr>
                 <Table.Tr>
                   <Table.Td style={{ fontWeight: 600 }}>Category:</Table.Td>
@@ -273,7 +316,7 @@ const ProductList = () => {
                   <Table.Td>
                     <NumberFormatter
                       value={selectedProduct.price}
-                      prefix="$"
+                      prefix="रू "
                       thousandSeparator
                       decimalScale={2}
                     />
@@ -285,7 +328,7 @@ const ProductList = () => {
                     <Table.Td>
                       <NumberFormatter
                         value={selectedProduct.originalPrice}
-                        prefix="$"
+                        prefix="रू "
                         thousandSeparator
                         decimalScale={2}
                       />
@@ -325,7 +368,7 @@ const ProductList = () => {
                     </Badge>
                   </Table.Td>
                 </Table.Tr>
-                {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
+                {selectedProduct?.sizes && selectedProduct.sizes.length > 0 && (
                   <Table.Tr>
                     <Table.Td style={{ fontWeight: 600 }}>Sizes:</Table.Td>
                     <Table.Td>
@@ -339,7 +382,7 @@ const ProductList = () => {
                     </Table.Td>
                   </Table.Tr>
                 )}
-                {selectedProduct.colors && selectedProduct.colors.length > 0 && (
+                {selectedProduct?.colors && selectedProduct.colors.length > 0 && (
                   <Table.Tr>
                     <Table.Td style={{ fontWeight: 600 }}>Colors:</Table.Td>
                     <Table.Td>
@@ -369,6 +412,56 @@ const ProductList = () => {
             </Table>
           </div>
         )}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        opened={editModalOpen}
+        onClose={handleCloseEditModal}
+        title={`Edit Product - ${selectedProduct?.name || ''}`}
+        size="xl"
+      >
+        {selectedProduct && (
+          <ProductAdd
+            editMode={true}
+            productData={selectedProduct}
+            onProductUpdated={handleProductUpdated}
+            onCancel={handleCloseEditModal}
+          />
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        opened={deleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        title="Delete Product"
+        size="md"
+      >
+        <Stack>
+          <Text>
+            Are you sure you want to delete <strong>{selectedProduct?.name}</strong>?
+            This action cannot be undone.
+          </Text>
+          
+          <Group justify="flex-end" mt="md">
+            <Button
+              variant="light"
+              onClick={handleCloseDeleteModal}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={confirmDelete}
+              loading={isDeleting}
+              leftSection={<IconTrash size={16} />}
+            >
+              Delete Product
+            </Button>
+          </Group>
+        </Stack>
       </Modal>
     </>
   );

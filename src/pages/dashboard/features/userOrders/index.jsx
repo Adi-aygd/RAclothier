@@ -1,19 +1,17 @@
 import { Group, Text, Box } from '@mantine/core';
-import ProductList from './productList';
-import ProductAdd from './productAdd';
+import UserOrdersList from './userOrdersList';
 
-const Products = () => {
+const UserOrders = () => {
   return (
     <Box p="md">
       <Group justify="space-between" mb="md">
         <Text size="xl" fw={700}>
-          Product Management
+          My Orders
         </Text>
-        <ProductAdd />
       </Group>
-      <ProductList />
+      <UserOrdersList />
     </Box>
   );
 };
 
-export default Products;
+export default UserOrders;
