@@ -170,32 +170,6 @@
   - **Assets**: Optimized bundling
   - **Environment**: Configuration management
 
-  ### Environment Variables
-  ```bash
-  # Server Configuration
-  PORT=5173
-  NODE_ENV=development
-
-  # Firebase Configuration
-  FIREBASE_PROJECT_ID=wanderlust-b43f0
-  FIREBASE_WEB_API_KEY=your_firebase_web_api_key
-
-  # Security
-  ADMIN_SECRET=your-super-secret-admin-key-123
-  JWT_SECRET=your_jwt_secret_key_here
-  JWT_EXPIRES_IN=7d
-
-  # File Upload
-  MAX_FILE_SIZE=5242880
-  UPLOAD_PATH=./uploads
-
-  # Rate Limiting
-  RATE_LIMIT_WINDOW_MS=900000
-  RATE_LIMIT_MAX_REQUESTS=100
-  ```
-
-  ---
-
   ## 📊 Performance & Scalability
 
   ### Frontend Optimization
